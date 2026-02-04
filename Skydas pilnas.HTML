@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="lt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>108M (6×18) Skydas – Drag&Drop + Lentelės + Etiketės + BOM + Single-line</title>
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel:#12151b;
+      --grid:#1a1f28;
+      --txt:#e8eef7;
+      --muted:#aab6c8;
+
+      /* Fazės (pagal tavo norą) */
+      --L1:#8b5a2b;    /* ruda */
+      --L2:#111111;    /* juoda */
+      --L3:#808080;    /* pilka */
+      --N:#1b5fbf;     /* mėlyna */
+      --PE:#2ea84a;    /* žalia */
+      --PE2:#ffd400;   /* geltona */
+
+      /* Grupės (vizualiai) */
+      --g-main:#cfd6e3;
+      --g-rcd:#2ec27e;
+      --g-ev:#ff5c5c;
+      --g-3f:#6aa9ff;
+      --g-1f:#ffd27a;
+      --g-ctrl:#9be7ff;
+      --g-res:#3b4352;
+
+      --cell-h: 56px;
+      --cell-gap: 6px;
+      --radius: 12px;
+      --shadow: 0 10px 24px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background:linear-gradient(180deg, #07090c 0%, #0b0d10 100%);
+      color:var(--txt);
+      font-family:var(--sans);
+    }
+    .wrap{
+      max-width: 1280px;
+      margin: 18px auto 40px;
+      padding: 0 16px;
+    }
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom: 12px;
+    }
+    h1{ font-size: 18px; margin:0; letter-spacing:.2px; }
+    .sub{
+      margin-top:6px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .topbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .pill{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--txt);
+      padding: 8px 10px;
+      border-radius: 999px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size: 13px;
+      user-select:none;
+    }
+    .pill input{ accent-color:#7aa2ff; }
+    .btn{
+      cursor:pointer;
+      background: rgba(122,162,255,.16);
+      border: 1px solid rgba(122,162,255,.30);
+    }
+    .btn:hover{ filter:brightness(1.05); }
+
+    .legend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin: 12px 0 14px;
+    }
+    .chip{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      display:inline-block;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.10) inset;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .panel h2{
+      font-size: 13px;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing:.2px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 70px 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-bottom: 10px;
+    }
+    .row:last-child{ margin-bottom: 0; }
+    .rowLabel{
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 10px 8px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      text-align:center;
+      gap:4px;
+    }
+    .rowLabel .n{ font-weight: 700; font-size: 13px; color: var(--txt); }
+    .rowLabel .t{ font-size: 11px; color: var(--muted); line-height: 1.2; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(18, minmax(0, 1fr));
+      gap: var(--cell-gap);
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+      padding: 10px;
+      min-height: calc(var(--cell-h) + 20px);
+    }
+    .grid.dropTarget{
+      outline: 2px dashed rgba(122,162,255,.55);
+      outline-offset: 4px;
+    }
+
+    .cell{
+      height: var(--cell-h);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+      background: var(--grid);
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding: 6px 6px;
+      cursor: grab;
+      user-select:none;
+    }
+    .cell:active{ cursor:grabbing; }
+    .cell.dragging{ opacity:.35; filter: saturate(.9); }
+    .cell.invalid{ border-color: rgba(255,92,92,.85); box-shadow: 0 0 0 2px rgba(255,92,92,.22); }
+
+    .cell .tag{
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(255,255,255,.92);
+      letter-spacing:.2px;
+      line-height: 1.05;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      width:100%;
+    }
+    .cell .name{
+      font-size: 11px;
+      color: rgba(255,255,255,.80);
+      line-height: 1.15;
+      margin-top: 2px;
+      max-height: 2.4em;
+      overflow:hidden;
+    }
+    .cell .mods{
+      position:absolute;
+      top:6px; right:6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: rgba(255,255,255,.75);
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 2px 6px;
+      border-radius: 999px;
+    }
+    .phaseStripe{
+      position:absolute;
+      left:0; top:0;
+      height: 6px;
+      width: 100%;
+      background: transparent;
+    }
+    .groupStripe{
+      position:absolute;
+      left:0; bottom:0;
+      height: 7px;
+      width: 100%;
+      background: transparent;
+      opacity:.95;
+    }
+
+    .bank{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+    }
+    .bank .cell{ height: 62px; }
+
+    .status{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+    }
+    .warn{ color:#ffb3b3; }
+    .ok{ color:#b8ffd7; }
+
+    .section{
+      margin-top: 14px;
+    }
+    .section h3{
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+    }
+    th, td{
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 10px;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th{
+      text-align:left;
+      color: var(--muted);
+      font-weight: 700;
+      background: rgba(255,255,255,.04);
+    }
+    tr:last-child td{ border-bottom:none; }
+
+    .mono{
+      font-family: var(--mono);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 12px;
+      overflow:auto;
+      font-size: 13px;
+      line-height: 1.35;
+      white-space: pre;
+    }
+
+    .copyBox{
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--txt);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .note{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 980px){
+      .layout{ grid-template-columns: 1fr; }
+      .bank{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+    @media (max-width: 760px){
+      .row{ grid-template-columns: 54px 1fr; }
+      :root{ --cell-h: 52px; --cell-gap: 5px; }
+      .cell .name{ display:none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>108M skydo vizualizacija (6×18) – Drag&Drop + dokumentacija</h1>
+      <div class="sub">
+        Atnaujinta pagal tavo korekcijas:
+        <b>garažo rozetės 1 automatas</b>, <b>katilinė kriauklė+gyvatukas 1 automatas</b>, <b>filtrai 3 eilėje</b>,
+        <b>įlajos+Shelly+kolektoriai perkelti į 4 eilę</b>,
+        <b>5 eilė – 3F</b>, <b>6 eilė – EV</b>.
+        <br/>Kaitlentė saloje – <b>3 fazės</b> (3P automatas).
+      </div>
+    </div>
+    <div class="topbar">
+      <label class="pill"><input id="togglePhase" type="checkbox" checked>Fazių juosta</label>
+      <label class="pill"><input id="toggleGroup" type="checkbox" checked>Grupių juosta</label>
+      <label class="pill"><input id="toggleNames" type="checkbox" checked>Pavadinimai</label>
+      <span class="pill btn" id="btnExport">Eksportuoti (JSON)</span>
+      <span class="pill btn" id="btnReset">Reset į pradinį</span>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:var(--L1)"></span>L1 ruda</span>
+    <span class="chip"><span class="dot" style="background:var(--L2)"></span>L2 juoda</span>
+    <span class="chip"><span class="dot" style="background:var(--L3)"></span>L3 pilka</span>
+    <span class="chip"><span class="dot" style="background:var(--N)"></span>N mėlyna</span>
+    <span class="chip"><span class="dot" style="background:linear-gradient(90deg,var(--PE2),var(--PE))"></span>PE</span>
+
+    <span class="chip"><span class="dot" style="background:var(--g-main)"></span>Įvadas/apsauga</span>
+    <span class="chip"><span class="dot" style="background:var(--g-rcd)"></span>RCD</span>
+    <span class="chip"><span class="dot" style="background:var(--g-1f)"></span>1F</span>
+    <span class="chip"><span class="dot" style="background:var(--g-3f)"></span>3F</span>
+    <span class="chip"><span class="dot" style="background:var(--g-ev)"></span>EV</span>
+    <span class="chip"><span class="dot" style="background:var(--g-res)"></span>Rezervas</span>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Library -->
+    <div class="panel">
+      <h2>Modulių biblioteka (tempk į eilę)</h2>
+      <div class="status" id="status"></div>
+      <div class="note">
+        Dvigubas paspaudimas ant modulio skyde – <b>pašalina</b>. Kiekviena eilė turi būti <b>18M</b>.
+      </div>
+      <div style="height:10px"></div>
+      <div class="bank" id="library"></div>
+    </div>
+
+    <!-- RIGHT: Board -->
+    <div class="panel">
+      <h2>Skydas 6×18 (numesk į eilę, perstumdyk viduje)</h2>
+      <div id="board"></div>
+    </div>
+  </div>
+
+  <!-- Documentation -->
+  <div class="panel section" style="margin-top:14px;">
+    <h2>1) Galutinis 108M skydo išdėstymas eilėmis (6×18) – lentelėmis</h2>
+    <div id="tables"></div>
+
+    <div class="section">
+      <h3>2) Etiketės – pagal kabelių pavadinimus / įrenginius (kopijuok/spausdink)</h3>
+      <textarea class="copyBox" id="labels" readonly></textarea>
+      <div class="note">Tip: pažymėk viską (Ctrl+A) → kopijuok (Ctrl+C) → spausdink į etiketes.</div>
+    </div>
+
+    <div class="section">
+      <h3>3) BOM – su kiekiais</h3>
+      <div id="bom"></div>
+    </div>
+
+    <div class="section">
+      <h3>4) Vienos linijos schema – aiškus sąrašas eilutė po eilutės</h3>
+      <div class="mono" id="sld"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== Helpers =====
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const cssVar = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  const phaseColor = (p) => {
+    if(p==="L1") return cssVar("--L1");
+    if(p==="L2") return cssVar("--L2");
+    if(p==="L3") return cssVar("--L3");
+    if(p==="N")  return cssVar("--N");
+    if(p==="PE") return `linear-gradient(90deg, ${cssVar("--PE2")}, ${cssVar("--PE")})`;
+    if(p==="3F") return `linear-gradient(90deg, ${cssVar("--L1")}, ${cssVar("--L2")}, ${cssVar("--L3")})`;
+    return "transparent";
+  };
+  const groupColor = (g) => {
+    const map = { main:"--g-main", rcd:"--g-rcd", "1f":"--g-1f", "3f":"--g-3f", ev:"--g-ev", ctrl:"--g-ctrl", res:"--g-res" };
+    return cssVar(map[g] || "--g-res");
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+
+  // ===== Circuits (pagal tavo korekcijas) =====
+  // Apšvietimas (8)
+  const lighting = [
+    {id:"QF2", tag:"QF2", name:"Apšv. (Kambarys 2 / Laiptinė / Miegamasis)", w:1, phase:"L1", group:"1f"},
+    {id:"QF3", tag:"QF3", name:"Apšv. Kambarys 1 / 2A WC", w:1, phase:"L1", group:"1f"},
+    {id:"QF4", tag:"QF4", name:"Apšv. Svetainės", w:1, phase:"L1", group:"1f"},
+    {id:"QF5", tag:"QF5", name:"Apšv. Darbo k. / Holas", w:1, phase:"L1", group:"1f"},
+    {id:"QF6", tag:"QF6", name:"Apšv. Holas pr. Garažo / WC", w:1, phase:"L1", group:"1f"},
+    {id:"QF7", tag:"QF7", name:"Apšv. Katilinė", w:1, phase:"L1", group:"1f"},
+    {id:"QF8", tag:"QF8", name:"Apšv. Garažo", w:1, phase:"L1", group:"1f"},
+    {id:"QF9", tag:"QF9", name:"Apšv. Žemė laukas", w:1, phase:"L1", group:"1f"},
+  ];
+
+  // Rozetės (14) – sujungta: garažas 1 automatas; katilinė kriauklė+gyvatukas 1 automatas; filtrai 3 eilėje
+  const sockets = [
+    {id:"QF10", tag:"QF10", name:"Roz. Holas pr. garažo / Holas", w:1, phase:"L2", group:"1f"},
+    {id:"QF11", tag:"QF11", name:"Roz. Virtuvės / darbo kambario", w:1, phase:"L2", group:"1f"},
+    {id:"QF12", tag:"QF12", name:"Roz. Svetainės", w:1, phase:"L2", group:"1f"},
+    {id:"QF13", tag:"QF13", name:"Roz. Darbo k.", w:1, phase:"L2", group:"1f"},
+    {id:"QF14", tag:"QF14", name:"Roz. Kamb. 1", w:1, phase:"L2", group:"1f"},
+    {id:"QF15", tag:"QF15", name:"Roz. Kamb. 2", w:1, phase:"L2", group:"1f"},
+    {id:"QF16", tag:"QF16", name:"Roz. Miegamasis", w:1, phase:"L2", group:"1f"},
+    {id:"QF17", tag:"QF17", name:"Roz. 1 a WC", w:1, phase:"L2", group:"1f"},
+    {id:"QF18", tag:"QF18", name:"Roz. 2 a WC mažas", w:1, phase:"L2", group:"1f"},
+    {id:"QF19", tag:"QF19", name:"Roz. 2 a balkono + apšv.", w:1, phase:"L2", group:"1f"},
+    {id:"QF20", tag:"QF20", name:"Roz. Terasos + apšv.", w:1, phase:"L2", group:"1f"},
+    {id:"QF21", tag:"QF21", name:"Roz. Garažo (abi) – 1 automatas", w:1, phase:"L2", group:"1f"},
+    {id:"QF23", tag:"QF23", name:"Katilinė: virš kriauklės + gyvatukas", w:1, phase:"L2", group:"1f"},
+    {id:"QF24", tag:"QF24", name:"Roz. Filtrų", w:1, phase:"L2", group:"1f"},
+  ];
+
+  // Įrenginiai / valdymas (12) + Shelly + rezervas (1) po RCD3 (4) = 18
+  const devices = [
+    {id:"QF26", tag:"QF26", name:"Rekuperatorius", w:1, phase:"L3", group:"1f"},
+    {id:"QF27", tag:"QF27", name:"Orapūtė", w:1, phase:"L3", group:"1f"},
+    {id:"QF28", tag:"QF28", name:"Gręžinys", w:1, phase:"L3", group:"1f"},
+    {id:"QF29", tag:"QF29", name:"Vartai", w:1, phase:"L3", group:"1f"},
+    {id:"QF30", tag:"QF30", name:"Internetas / kameros / ryšių spinta / LED", w:1, phase:"L3", group:"1f"},
+    {id:"QF31", tag:"QF31", name:"Signalizacija (230V)", w:1, phase:"L3", group:"1f"},
+    {id:"QF32", tag:"QF32", name:"Skalbyklė", w:1, phase:"L3", group:"1f"},
+    {id:"QF33", tag:"QF33", name:"Džiovyklė", w:1, phase:"L3", group:"1f"},
+    {id:"QF34", tag:"QF34", name:"Roz. Sala", w:1, phase:"L3", group:"1f"},
+    {id:"QF35", tag:"QF35", name:"Orkaitė", w:1, phase:"L3", group:"1f"},
+    {id:"QF36", tag:"QF36", name:"Kolektorius 1 a.", w:1, phase:"L3", group:"1f"},
+    {id:"QF37", tag:"QF37", name:"Kolektorius 2 a.", w:1, phase:"L3", group:"1f"},
+    {id:"QF38", tag:"QF38", name:"ĮLAJOS (abi) – šildomi kabeliai", w:1, phase:"L3", group:"1f"},
+  ];
+
+  // 3F vartotojai (5 eilė – 18M tiksliai)
+  const threeF = [
+    {id:"QF39", tag:"QF39", name:"Š.S. vidinis blokas 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF40", tag:"QF40", name:"Š.S. išorinis blokas 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF41", tag:"QF41", name:"Kondicionierius 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF42", tag:"QF42", name:"Inverteris (saulė / hibridinis) 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF44", tag:"QF44", name:"Kaitlentė saloje 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF45", tag:"QF45", name:"Laukas / Pirtis / Laistymo sistema 3P", w:3, phase:"3F", group:"3f"},
+  ];
+
+  // ===== Library templates (su naujais pavadinimais, be QF22 ir QF25) =====
+  const libraryTemplates = [
+    {id:"QS0", tag:"QS0", name:"Pagrindinis jungiklis 4P 63A", w:4, phase:"3F", group:"main"},
+    {id:"SPD1", tag:"SPD1", name:"SPD T2 (3+N)", w:4, phase:"3F", group:"main"},
+    {id:"QF-SPD", tag:"QF-SPD", name:"SPD apsauginis automatas C20 3P", w:3, phase:"3F", group:"main"},
+    {id:"UR1", tag:"UR1", name:"Įtampos kontrolės relė 3F+N (6M)", w:6, phase:"3F", group:"ctrl"},
+    {id:"SM1", tag:"SM1", name:"Smart meter 3F DIN (4M)", w:4, phase:"3F", group:"ctrl"},
+    {id:"RCD1", tag:"RCD1", name:"RCD Apšvietimas 4P 30mA (4M)", w:4, phase:"3F", group:"rcd"},
+    {id:"RCD2", tag:"RCD2", name:"RCD Rozetės 4P 30mA (4M)", w:4, phase:"3F", group:"rcd"},
+    {id:"RCD3", tag:"RCD3", name:"RCD Įrenginiai 4P 30mA (4M)", w:4, phase:"3F", group:"rcd"},
+    {id:"RCD-EV", tag:"RCD-EV", name:"RCD Type B 4P 30mA (4M)", w:4, phase:"3F", group:"ev"},
+    {id:"QF1", tag:"QF1", name:"RCBO C10 1P+N 30mA (kritiniai)", w:2, phase:"L1", group:"1f"},
+    {id:"SH1", tag:"SH1", name:"Shelly DIN (1M)", w:1, phase:"N", group:"ctrl"},
+    {id:"REZ1", tag:"REZ", name:"Rezervas 1M", w:1, phase:"", group:"res"},
+    {id:"REZ2", tag:"REZ", name:"Rezervas 2M", w:2, phase:"", group:"res"},
+    {id:"REZ3", tag:"REZ", name:"Rezervas 3M", w:3, phase:"", group:"res"},
+    {id:"REZ4", tag:"REZ", name:"Rezervas 4M", w:4, phase:"", group:"res"},
+    // 3F
+    {id:"QF39", tag:"QF39", name:"Š.S. vidus 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF40", tag:"QF40", name:"Š.S. laukas 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF41", tag:"QF41", name:"Kondicionierius 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF42", tag:"QF42", name:"Saulė / inverteris 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF43", tag:"QF43", name:"EV stotelė 3P", w:3, phase:"3F", group:"ev"},
+    {id:"QF44", tag:"QF44", name:"Kaitlentė saloje 3P", w:3, phase:"3F", group:"3f"},
+    {id:"QF45", tag:"QF45", name:"Laukas/Pirtis/Laistymas 3P", w:3, phase:"3F", group:"3f"},
+  ];
+
+  // Add all 1F breakers we use (lighting + sockets + devices)
+  const all1F = [
+    ...lighting,
+    ...sockets,
+    ...devices
+  ];
+  all1F.forEach(x => libraryTemplates.push(x));
+
+  // ===== Initial board (6×18) =====
+  const initialBoard = [
+    // Row 1 = 18
+    [
+      {id:"QS0", tag:"QS0", name:"Pagrindinis jungiklis 4P 63A", w:4, phase:"3F", group:"main"},
+      {id:"SPD1", tag:"SPD1", name:"SPD T2 (3+N)", w:4, phase:"3F", group:"main"},
+      {id:"QF-SPD", tag:"QF-SPD", name:"SPD apsauginis automatas C20 3P (jei reikia)", w:3, phase:"3F", group:"main"},
+      {id:"UR1", tag:"UR1", name:"Įtampos kontrolės relė 3F+N (6M)", w:6, phase:"3F", group:"ctrl"},
+      {id:"REZ", tag:"REZ", name:"Rezervas", w:1, phase:"", group:"res"},
+    ],
+    // Row 2 = 18
+    [
+      {id:"SM1", tag:"SM1", name:"Smart meter 3F DIN (4M)", w:4, phase:"3F", group:"ctrl"},
+      {id:"QF1", tag:"QF1", name:"RCBO C10 1P+N 30mA (kritiniai)", w:2, phase:"L1", group:"1f"},
+      {id:"RCD1", tag:"RCD1", name:"RCD Apšvietimas 4P 30mA", w:4, phase:"3F", group:"rcd"},
+      ...lighting
+    ],
+    // Row 3 = 18
+    [
+      {id:"RCD2", tag:"RCD2", name:"RCD Rozetės 4P 30mA", w:4, phase:"3F", group:"rcd"},
+      ...sockets
+    ],
+    // Row 4 = 18  (RCD3 + devices + SH1 + 1M rez)
+    [
+      {id:"RCD3", tag:"RCD3", name:"RCD Įrenginiai 4P 30mA", w:4, phase:"3F", group:"rcd"},
+      ...devices,
+      {id:"SH1", tag:"SH1", name:"Shelly DIN (įlajų valdymui)", w:1, phase:"N", group:"ctrl"},
+      {id:"REZ", tag:"REZ", name:"Rezervas", w:1, phase:"", group:"res"},
+    ],
+    // Row 5 = 18 (3F)
+    [
+      ...threeF
+    ],
+    // Row 6 = 18 (EV)
+    [
+      {id:"RCD-EV", tag:"RCD-EV", name:"RCD Type B 4P 30mA", w:4, phase:"3F", group:"ev"},
+      {id:"QF43", tag:"QF43", name:"EV krovimo stotelė 3P", w:3, phase:"3F", group:"ev"},
+      {id:"REZ", tag:"REZ", name:"Rezervas", w:11, phase:"", group:"res"},
+    ]
+  ];
+
+  // ===== App State =====
+  let board = structuredClone(initialBoard);
+  let uid = 0;
+
+  // ===== Rendering =====
+  function rowTitle(n){
+    return ({
+      1:"Įvadas / apsauga / kontrolė",
+      2:"Matavimas + kritiniai + apšvietimas (RCD1)",
+      3:"Rozetės (RCD2)",
+      4:"Įrenginiai / kolektoriai / įlajos (RCD3)",
+      5:"3 fazių vartotojai",
+      6:"EV (Type B) + rezervas"
+    })[n] || "";
+  }
+
+  function createCellElement(item, ctx){
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.style.gridColumn = `span ${item.w || 1}`;
+
+    const stripe = document.createElement("div");
+    stripe.className = "phaseStripe";
+    stripe.style.background = phaseColor(item.phase || "");
+    cell.appendChild(stripe);
+
+    const gstripe = document.createElement("div");
+    gstripe.className = "groupStripe";
+    gstripe.style.background = groupColor(item.group || "res");
+    cell.appendChild(gstripe);
+
+    const mods = document.createElement("div");
+    mods.className = "mods";
+    mods.textContent = `${item.w || 1}M`;
+    cell.appendChild(mods);
+
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = item.tag || "";
+    cell.appendChild(tag);
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = item.name || "";
+    cell.appendChild(name);
+
+    cell.title = `${item.tag || ""} • ${item.name || ""} • ${item.w||1}M`;
+
+    if(ctx.draggable){
+      cell.setAttribute("draggable","true");
+      cell.addEventListener("dragstart", (e)=>{
+        cell.classList.add("dragging");
+        if(ctx.source === "library"){
+          e.dataTransfer.setData("text/plain", JSON.stringify({kind:"library", templateId:item.id}));
+        }else{
+          e.dataTransfer.setData("text/plain", JSON.stringify({kind:"board", fromRow:ctx.rowIndex, fromIndex:ctx.itemIndex}));
+        }
+        e.dataTransfer.effectAllowed = "move";
+      });
+      cell.addEventListener("dragend", ()=>{
+        cell.classList.remove("dragging");
+        $$(".grid").forEach(g=>g.classList.remove("dropTarget"));
+      });
+    }
+
+    if(ctx.source === "board"){
+      cell.addEventListener("dblclick", ()=>{
+        board[ctx.rowIndex].splice(ctx.itemIndex, 1);
+        renderAll();
+      });
+      // Drop before this item
+      cell.addEventListener("dragover", (e)=>e.preventDefault());
+      cell.addEventListener("drop", (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const payload = e.dataTransfer.getData("text/plain");
+        try{
+          const data = JSON.parse(payload);
+          const targetRow = ctx.rowIndex;
+          const targetIndex = ctx.itemIndex;
+          if(data.kind==="library"){
+            insertFromLibrary(data.templateId, targetRow, targetIndex);
+          }else if(data.kind==="board"){
+            moveWithinBoard(data.fromRow, data.fromIndex, targetRow, targetIndex);
+          }
+        }catch(err){ console.warn(err); }
+        renderAll();
+      });
+    }
+    return cell;
+  }
+
+  function renderLibrary(){
+    const lib = $("#library");
+    lib.innerHTML = "";
+    // show only unique template ids (some ids might repeat; keep first)
+    const seen = new Set();
+    libraryTemplates.forEach(t => {
+      if(seen.has(t.id)) return;
+      seen.add(t.id);
+      lib.appendChild(createCellElement(t, { draggable:true, source:"library" }));
+    });
+  }
+
+  function renderBoard(){
+    const root = $("#board");
+    root.innerHTML = "";
+    board.forEach((rItems, rIdx) => {
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const label = document.createElement("div");
+      label.className = "rowLabel";
+      label.innerHTML = `<div class="n">Eilė ${rIdx+1}</div><div class="t">${esc(rowTitle(rIdx+1))}</div>`;
+      row.appendChild(label);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      grid.dataset.row = String(rIdx);
+
+      grid.addEventListener("dragover", (e)=>{ e.preventDefault(); grid.classList.add("dropTarget"); });
+      grid.addEventListener("dragleave", ()=> grid.classList.remove("dropTarget"));
+      grid.addEventListener("drop", (e)=> {
+        e.preventDefault();
+        grid.classList.remove("dropTarget");
+        const payload = e.dataTransfer.getData("text/plain");
+        try{
+          const data = JSON.parse(payload);
+          if(data.kind === "library"){
+            addFromLibraryToRow(data.templateId, rIdx);
+          }else if(data.kind === "board"){
+            moveWithinBoard(data.fromRow, data.fromIndex, rIdx);
+          }
+        }catch(err){ console.warn("Drop parse error", err); }
+        renderAll();
+      });
+
+      rItems.forEach((it, iIdx) => {
+        grid.appendChild(createCellElement(it, { draggable:true, source:"board", rowIndex:rIdx, itemIndex:iIdx }));
+      });
+
+      row.appendChild(grid);
+      root.appendChild(row);
+    });
+
+    applyToggles();
+    validateAll();
+  }
+
+  // ===== DnD actions =====
+  function cloneTemplate(templateId){
+    const t = libraryTemplates.find(x=>x.id===templateId);
+    if(!t) return null;
+    const c = structuredClone(t);
+    c._uid = ++uid;
+    return c;
+  }
+  function addFromLibraryToRow(templateId, rowIdx){
+    const item = cloneTemplate(templateId);
+    if(!item) return;
+    board[rowIdx].push(item);
+  }
+  function insertFromLibrary(templateId, rowIdx, index){
+    const item = cloneTemplate(templateId);
+    if(!item) return;
+    board[rowIdx].splice(index, 0, item);
+  }
+  function moveWithinBoard(fromRow, fromIndex, toRow, toIndex=null){
+    const item = board[fromRow]?.[fromIndex];
+    if(!item) return;
+    board[fromRow].splice(fromIndex, 1);
+    if(toIndex===null || toIndex===undefined){
+      board[toRow].push(item);
+    }else{
+      if(fromRow===toRow && fromIndex < toIndex) toIndex -= 1;
+      board[toRow].splice(toIndex, 0, item);
+    }
+  }
+
+  // ===== Validation =====
+  function rowModules(rItems){ return rItems.reduce((s,x)=>s+(x.w||1),0); }
+  function validateAll(){
+    let issues = [];
+    board.forEach((rItems, i)=>{
+      const m = rowModules(rItems);
+      const grid = document.querySelector(`.grid[data-row="${i}"]`);
+      if(!grid) return;
+      grid.querySelectorAll(".cell").forEach(c=>c.classList.remove("invalid"));
+      if(m !== 18){
+        issues.push(`Eilė ${i+1}: ${m}M (turi būti 18M)`);
+        grid.querySelectorAll(".cell").forEach(c=>c.classList.add("invalid"));
+      }
+    });
+
+    const st = $("#status");
+    if(issues.length===0){
+      st.innerHTML = `<div class="ok"><b>OK:</b> visos 6 eilės turi po 18M ✅</div>
+                      <div>Double click ant modulio skyde – pašalina. Eksportas – JSON.</div>`;
+    }else{
+      st.innerHTML = `<div class="warn"><b>Klaidos:</b></div>
+                      <ul class="warn" style="margin:6px 0 0 18px; padding:0;">${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    }
+  }
+
+  // ===== Toggles =====
+  function applyToggles(){
+    const showPhase = $("#togglePhase").checked;
+    const showGroup = $("#toggleGroup").checked;
+    const showNames = $("#toggleNames").checked;
+    $$(".phaseStripe").forEach(el => el.style.display = showPhase ? "block" : "none");
+    $$(".groupStripe").forEach(el => el.style.display = showGroup ? "block" : "none");
+    $$(".name").forEach(el => el.style.display = showNames ? "block" : "none");
+  }
+  ["togglePhase","toggleGroup","toggleNames"].forEach(id=>{
+    $("#"+id).addEventListener("change", applyToggles);
+  });
+
+  // ===== Export / Reset =====
+  $("#btnExport").addEventListener("click", ()=>{
+    const exportObj = board.map(r => r.map(it => ({ tag: it.tag, name: it.name, w: it.w, phase: it.phase, group: it.group })));
+    const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "108M_skydo_isdestymas.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $("#btnReset").addEventListener("click", ()=>{
+    board = structuredClone(initialBoard);
+    renderAll();
+  });
+
+  // ===== Documentation builders =====
+  function buildRowTable(rowIndex){
+    const items = board[rowIndex];
+    const tr = items.map(it => `${it.tag} (${it.w||1}M) – ${it.name}`).join("<br/>");
+    const total = rowModules(items);
+    return `
+      <table style="margin-bottom:12px;">
+        <tr><th style="width:120px;">Eilė ${rowIndex+1}</th><th>${esc(rowTitle(rowIndex+1))} — <span style="color:#b8ffd7;">${total}M</span></th></tr>
+        <tr><td><b>Turinys</b></td><td>${tr}</td></tr>
+      </table>
+    `;
+  }
+
+  function buildTables(){
+    $("#tables").innerHTML = [0,1,2,3,4,5].map(buildRowTable).join("");
+  }
+
+  function buildLabels(){
+    // Etiketės pagal kabelių pavadinimus / įrenginius (iš tavo sąrašo + korekcijos)
+    const lines = [];
+
+    // Įvadas / apsaugos
+    lines.push("QS0 – Pagrindinis jungiklis 4P 63A");
+    lines.push("SPD1 – Viršįtampių ribotuvas T2 (3+N)");
+    lines.push("QF-SPD – SPD apsauginis automatas C20 3P (jei reikia)");
+    lines.push("UR1 – Įtampos kontrolės relė 3F+N (6M)");
+    lines.push("SM1 – Smart meter 3F DIN (4M)");
+
+    // RCD
+    lines.push("RCD1 – Apšvietimas (4P 30mA Type A)");
+    lines.push("RCD2 – Rozetės (4P 30mA Type A)");
+    lines.push("RCD3 – Įrenginiai / kolektoriai / įlajos (4P 30mA Type A)");
+    lines.push("RCD-EV – EV įkrovimas (Type B 4P 30mA)");
+    lines.push("QF1 – Kritiniai (RCBO) – (jei naudojama kritiniams)");
+
+    // Apšvietimas
+    lighting.forEach(x => lines.push(`${x.tag} – ${x.name}`));
+
+    // Rozetės
+    sockets.forEach(x => lines.push(`${x.tag} – ${x.name}`));
+
+    // Įrenginiai/valdymas
+    devices.forEach(x => lines.push(`${x.tag} – ${x.name}`));
+    lines.push("SH1 – Shelly DIN – įlajų valdymui");
+
+    // 3F
+    threeF.forEach(x => lines.push(`${x.tag} – ${x.name}`));
+    lines.push("QF43 – EV krovimo stotelė 3P");
+
+    $("#labels").value = lines.join("\n");
+  }
+
+  function countBy(predicate){
+    let c = 0;
+    board.flat().forEach(it => { if(predicate(it)) c += 1; });
+    return c;
+  }
+
+  function buildBOM(){
+    // Skaičiuojam iš skydo
+    const all = board.flat();
+
+    // RCD count
+    const rcdA = all.filter(x => /^RCD[123]$/.test(x.tag)).length;
+    const rcdB = all.filter(x => x.tag==="RCD-EV").length;
+    const rcbo = all.filter(x => x.tag==="QF1").length;
+
+    // MCB counts (1P/3P)
+    // (čia BOM yra logiškas – pagal tavo kabelius: apšvietimas C10, rozetės/įrenginiai C16, 3F – C16)
+    const mcb1pC10 = lighting.length; // 8
+    const mcb1pC16 = sockets.length + devices.length; // 14 + 13 = 27 (devices turi 13, nes įtraukta QF38 įlajos)
+    const mcb3p = threeF.length + 1; // + EV breaker QF43
+
+    // N paskirstymo blokai – po vieną kiekvienam RCD (RCD1, RCD2, RCD3, RCD-EV) = 4
+    const nBlocks = 4;
+
+    const rows = [
+      ["Skydas įleidžiamas 108M (6×18 mod.)", "1 vnt"],
+      ["QS0 Pagrindinis jungiklis 4P 63A (4M)", "1 vnt"],
+      ["SPD1 SPD T2 (3+N) (4M)", "1 vnt"],
+      ["QF-SPD automatas SPD apsaugai C20 3P (3M) (jei reikia)", "1 vnt"],
+      ["UR1 Įtampos kontrolės relė 3F+N (6M)", "1 vnt"],
+      ["SM1 Smart meter 3F DIN (4M)", "1 vnt"],
+      ["RCD Type A 4P 30mA (RCD1–RCD3)", `${rcdA} vnt`],
+      ["RCD Type B 4P 30mA (RCD-EV)", `${rcdB} vnt`],
+      ["RCBO C10 1P+N 30mA (QF1)", `${rcbo} vnt`],
+      ["MCB 1P C10 (apšvietimas)", `${mcb1pC10} vnt`],
+      ["MCB 1P C16 (rozetės + įrenginiai)", `${mcb1pC16} vnt`],
+      ["MCB 3P C16 (3F vartotojai + EV)", `${mcb3p} vnt`],
+      ["Shelly DIN relė (SH1)", "1 vnt"],
+      ["N paskirstymo blokai DIN (mėlyni, su dangteliu, 1 įėjimas + ≥12 išėjimų)", `${nBlocks} vnt (RCD1, RCD2, RCD3, RCD-EV)`],
+      ["PE šyna (bendra)", "1 vnt"],
+      ["Šukinė 1F (pagal RCD grupes)", "komplektai pagal montavimą"],
+      ["Šukinė 3F (3F eilė + EV)", "komplektai pagal montavimą"],
+    ];
+
+    $("#bom").innerHTML = `
+      <table>
+        <tr><th style="width:65%;">Komponentas</th><th>Kiekis / pastaba</th></tr>
+        ${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}
+      </table>
+      <div class="note">
+        Pastaba: automatiniai nominalai (C10/C16/C20) galutinai tikslinami pagal apkrovas ir projektuotojo sprendimą.
+        Čia BOM sudėtas pagal tavo kabelių skerspjūvius (1.5mm² apšvietimui, 2.5mm² rozetėms/įrenginiams).
+      </div>
+    `;
+  }
+
+  function buildSingleLine(){
+    const lines = [];
+    lines.push("ESO tinklas 3×20A");
+    lines.push("↓");
+    lines.push("[QS0] Pagrindinis jungiklis 4P 63A");
+    lines.push("↓");
+    lines.push("[SPD1] Viršįtampių ribotuvas T2 (3+N)");
+    lines.push("↓");
+    lines.push("[QF-SPD] SPD apsauginis automatas C20 3P (jei reikalinga pagal SPD instrukciją)");
+    lines.push("↓");
+    lines.push("[UR1] Įtampos kontrolės relė 3F+N (6M)");
+    lines.push("↓");
+    lines.push("[SM1] Smart meter 3F DIN (4M)");
+    lines.push("");
+    lines.push("Atšakos po SM1:");
+    lines.push("• [QF1] RCBO – kritiniai (jei priskirta kritiniams)");
+    lines.push("");
+    lines.push("• [RCD1] Apšvietimas (4P 30mA Type A)");
+    lighting.forEach(x => lines.push(`   - ${x.tag} ${x.name}`));
+    lines.push("");
+    lines.push("• [RCD2] Rozetės (4P 30mA Type A)");
+    sockets.forEach(x => lines.push(`   - ${x.tag} ${x.name}`));
+    lines.push("");
+    lines.push("• [RCD3] Įrenginiai / kolektoriai / įlajos (4P 30mA Type A)");
+    devices.forEach(x => lines.push(`   - ${x.tag} ${x.name}`));
+    lines.push(`   - SH1 Shelly DIN (įlajų valdymui)`);
+    lines.push("");
+    lines.push("• 3F vartotojai (atskira 5 eilė):");
+    threeF.forEach(x => lines.push(`   - ${x.tag} ${x.name}`));
+    lines.push("");
+    lines.push("• [RCD-EV] Type B 4P 30mA → [QF43] EV krovimo stotelė 3P (iki ~11 kW)");
+    $("#sld").textContent = lines.join("\n");
+  }
+
+  function renderAll(){
+    renderBoard();
+    buildTables();
+    buildLabels();
+    buildBOM();
+    buildSingleLine();
+  }
+
+  // ===== Init =====
+  renderLibrary();
+  renderAll();
+
+  // ===== Controls =====
+  $("#btnExport").addEventListener("click", ()=>{
+    const exportObj = board.map(r => r.map(it => ({ tag: it.tag, name: it.name, w: it.w, phase: it.phase, group: it.group })));
+    const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "108M_skydo_isdestymas.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $("#btnReset").addEventListener("click", ()=>{
+    board = structuredClone(initialBoard);
+    renderAll();
+  });
+
+  function applyToggles(){
+    const showPhase = $("#togglePhase").checked;
+    const showGroup = $("#toggleGroup").checked;
+    const showNames = $("#toggleNames").checked;
+    $$(".phaseStripe").forEach(el => el.style.display = showPhase ? "block" : "none");
+    $$(".groupStripe").forEach(el => el.style.display = showGroup ? "block" : "none");
+    $$(".name").forEach(el => el.style.display = showNames ? "block" : "none");
+  }
+  ["togglePhase","toggleGroup","toggleNames"].forEach(id=>{
+    $("#"+id).addEventListener("change", ()=>{ applyToggles(); });
+  });
+
+  function validateAll(){
+    let issues = [];
+    board.forEach((rItems, i)=>{
+      const m = rItems.reduce((s,x)=>s+(x.w||1),0);
+      const grid = document.querySelector(`.grid[data-row="${i}"]`);
+      if(!grid) return;
+      grid.querySelectorAll(".cell").forEach(c=>c.classList.remove("invalid"));
+      if(m !== 18){
+        issues.push(`Eilė ${i+1}: ${m}M (turi būti 18M)`);
+        grid.querySelectorAll(".cell").forEach(c=>c.classList.add("invalid"));
+      }
+    });
+    const st = $("#status");
+    if(issues.length===0){
+      st.innerHTML = `<div class="ok"><b>OK:</b> visos 6 eilės turi po 18M ✅</div>
+                      <div>Double click ant modulio skyde – pašalina.</div>`;
+    }else{
+      st.innerHTML = `<div class="warn"><b>Klaidos:</b></div>
+                      <ul class="warn" style="margin:6px 0 0 18px; padding:0;">${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+    }
+  }
+
+  // ===== Board DnD =====
+  function renderBoard(){
+    const root = $("#board");
+    root.innerHTML = "";
+    board.forEach((rItems, rIdx) => {
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const label = document.createElement("div");
+      label.className = "rowLabel";
+      label.innerHTML = `<div class="n">Eilė ${rIdx+1}</div><div class="t">${esc(rowTitle(rIdx+1))}</div>`;
+      row.appendChild(label);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      grid.dataset.row = String(rIdx);
+
+      grid.addEventListener("dragover", (e)=>{ e.preventDefault(); grid.classList.add("dropTarget"); });
+      grid.addEventListener("dragleave", ()=> grid.classList.remove("dropTarget"));
+      grid.addEventListener("drop", (e)=> {
+        e.preventDefault();
+        grid.classList.remove("dropTarget");
+        const payload = e.dataTransfer.getData("text/plain");
+        try{
+          const data = JSON.parse(payload);
+          if(data.kind === "library"){
+            const item = cloneTemplate(data.templateId);
+            if(item) board[rIdx].push(item);
+          }else if(data.kind === "board"){
+            moveWithinBoard(data.fromRow, data.fromIndex, rIdx);
+          }
+        }catch(err){ console.warn(err); }
+        renderAll();
+      });
+
+      rItems.forEach((it, iIdx) => {
+        const el = createCellElement(it, { draggable:true, source:"board", rowIndex:rIdx, itemIndex:iIdx });
+        grid.appendChild(el);
+      });
+
+      row.appendChild(grid);
+      root.appendChild(row);
+    });
+    applyToggles();
+    validateAll();
+  }
+
+  function renderLibrary(){
+    const lib = $("#library");
+    lib.innerHTML = "";
+    const seen = new Set();
+    libraryTemplates.forEach(t => {
+      if(seen.has(t.id)) return;
+      seen.add(t.id);
+      const el = createCellElement(t, { draggable:true, source:"library" });
+      lib.appendChild(el);
+    });
+  }
+
+  function cloneTemplate(templateId){
+    const t = libraryTemplates.find(x=>x.id===templateId);
+    if(!t) return null;
+    const c = structuredClone(t);
+    c._uid = ++uid;
+    return c;
+  }
+  function moveWithinBoard(fromRow, fromIndex, toRow, toIndex=null){
+    const item = board[fromRow]?.[fromIndex];
+    if(!item) return;
+    board[fromRow].splice(fromIndex, 1);
+    if(toIndex===null || toIndex===undefined){
+      board[toRow].push(item);
+    }else{
+      if(fromRow===toRow && fromIndex < toIndex) toIndex -= 1;
+      board[toRow].splice(toIndex, 0, item);
+    }
+  }
+</script>
+</body>
+</html>

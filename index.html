@@ -17,7 +17,7 @@ html = """<!doctype html>
       --l2:#111111;    /* juoda */
       --l3:#8B8B8B;    /* pilka */
       --n:#2F6BFF;     /* mėlyna */
-      --pe:#55C271;    /* geltonai žalia (supaprastinta) */
+      --pe:#55C271;    /* geltonai žalia */
 
       --grp_in:#f0b35a;
       --grp_rcd:#38c98a;
@@ -25,6 +25,8 @@ html = """<!doctype html>
       --grp_3f:#7aa7ff;
       --grp_ev:#ff5a6b;
       --grp_res:#6b7a90;
+
+      --cardBg: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
     }
     *{ box-sizing:border-box; }
     body{
@@ -43,7 +45,7 @@ html = """<!doctype html>
     .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .chip{
       border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      background: var(--cardBg);
       color:var(--text);
       padding:8px 10px;
       border-radius:999px;
@@ -59,7 +61,7 @@ html = """<!doctype html>
     .dot.pe{ background:var(--pe); }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      background: var(--cardBg);
       border:1px solid var(--line);
       border-radius:16px;
       padding:14px;
@@ -83,24 +85,46 @@ html = """<!doctype html>
     .rowLabel b{ font-size:13px; }
     .rowLabel span{ font-size:12px; color:var(--muted); }
 
-    .slots{ flex:1; display:grid; grid-template-columns: repeat(18, 1fr); gap:8px; }
-    .cell{
-      position:relative; height:56px;
+    /* 18 column grid with true spans */
+    .slots{
+      flex:1;
+      display:grid;
+      grid-template-columns: repeat(18, minmax(44px, 1fr));
+      gap:8px;
+      align-items:stretch;
+    }
+    .block{
+      position:relative;
+      height:62px;
       border-radius:14px;
       border:1px solid var(--line);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       padding:8px 8px 6px;
       overflow:hidden;
+      cursor:pointer;
+      user-select:none;
+      touch-action:manipulation;
     }
-    .cell .tag{ font-weight:700; font-size:12px; letter-spacing:.2px; line-height:1.05; }
-    .cell .name{
+    .block:active{ transform: translateY(1px); }
+    .block .tag{ font-weight:800; font-size:12px; letter-spacing:.2px; line-height:1.05; }
+    .block .name{
       font-size:11px; color:var(--muted);
       margin-top:5px; line-height:1.05;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
+    .pill{
+      position:absolute; top:6px; right:8px;
+      font-size:11px;
+      color:rgba(255,255,255,.92);
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      padding:2px 8px;
+      border-radius:999px;
+    }
+
     .barPhase{ position:absolute; left:0; top:0; bottom:0; width:6px; opacity:.95; }
     .phase-l1{ background:var(--l1); }
-    .phase-l2{ background:var(--l2); }
+    .phase-l2{ background:var(--l2); border-right:1px solid rgba(255,255,255,.12); }
     .phase-l3{ background:var(--l3); }
     .phase-n{ background:var(--n); }
     .phase-pe{ background:var(--pe); }
@@ -120,7 +144,7 @@ html = """<!doctype html>
     }
     table{ width:100%; border-collapse:collapse; min-width: 860px; }
     th, td{ padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:top; font-size:13px; }
-    th{ text-align:left; background: rgba(255,255,255,.05); font-weight:700; letter-spacing:.2px; }
+    th{ text-align:left; background: rgba(255,255,255,.05); font-weight:800; letter-spacing:.2px; }
     tr:last-child td{ border-bottom:none; }
 
     .copyBox{
@@ -144,7 +168,7 @@ html = """<!doctype html>
     }
     summary{
       cursor:pointer;
-      font-weight:800;
+      font-weight:900;
       list-style:none;
       display:flex;
       align-items:center;
@@ -163,6 +187,47 @@ html = """<!doctype html>
     }
     details[open] .caret{ transform: rotate(45deg); }
 
+    /* Bottom sheet */
+    .sheetBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:16px;
+      z-index:999;
+    }
+    .sheet{
+      width:min(720px, 100%);
+      border-radius:18px;
+      border:1px solid var(--line);
+      background: rgba(16,22,32,.98);
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      padding:14px 14px 12px;
+    }
+    .sheetTop{ display:flex; align-items:flex-start; gap:10px; }
+    .sheetTop h3{ margin:0; font-size:16px; letter-spacing:.2px; }
+    .sheetTop p{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+    .closeBtn{
+      margin-left:auto;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .metaRow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .meta{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:#dbe6ff;
+    }
+
     @media (min-width: 981px){
       .mobileOnly{ display:none; }
       .desktopOnly{ display:block; }
@@ -174,7 +239,7 @@ html = """<!doctype html>
       .desktopOnly{ display:none; }
       .mobileOnly{ display:block; }
       .rowLabel{ width:124px; flex-basis:124px; }
-      .cell{ height:60px; }
+      .block{ height:66px; }
     }
   </style>
 </head>
@@ -183,7 +248,7 @@ html = """<!doctype html>
   <div class="top">
     <div class="title">
       <h1>108M skydo peržiūra (6×18)</h1>
-      <p>Telefonui pritaikyta peržiūra: skydas slenka horizontaliai, dokumentacija aiški ir suskleidžiama.</p>
+      <p>Moduliai sujungti į vieną bloką pagal jų plotį (3M/4M/6M). Paliesk bloką – matysi pilną pavadinimą ir pastabą.</p>
     </div>
     <div class="chips" aria-label="Legend">
       <span class="chip"><span class="dot l1"></span> L1 ruda</span>
@@ -229,80 +294,93 @@ html = """<!doctype html>
   </div>
 </div>
 
+<div id="sheetBack" class="sheetBack" role="dialog" aria-modal="true" aria-label="Elemento informacija">
+  <div class="sheet">
+    <div class="sheetTop">
+      <div>
+        <h3 id="sheetTitle">—</h3>
+        <p id="sheetText">—</p>
+      </div>
+      <button class="closeBtn" id="sheetClose">Uždaryti</button>
+    </div>
+    <div class="metaRow" id="sheetMeta"></div>
+  </div>
+</div>
+
 <script>
 const DATA = {
   rows: [
     { row: 1, title: "Įvadas / apsauga / kontrolė", items: [
-      { code:"QS0", name:"Pagrindinis jungiklis 4P 63A", m:4, group:"in", phase:"l1" },
-      { code:"SPD1", name:"Viršįtampių ribotuvas T2 (3+N)", m:4, group:"in", phase:"l2" },
-      { code:"QF-SPD", name:"SPD apsauginis automatas C20 3P (jei reikalinga)", m:3, group:"in", phase:"l3" },
-      { code:"UR1", name:"Įtampos kontrolės relė 3F+N (6M)", m:6, group:"in", phase:"n" },
-      { code:"SM1", name:"Smart meter 3F DIN (4M)", m:4, group:"in", phase:"pe" },
-      { code:"REZ", name:"Rezervas", m:1, group:"res", phase:"l1" },
+      { code:"QS0", name:"Pagrindinis jungiklis 4P 63A", m:4, group:"in", phase:"l1", note:"Atsijungia visas skydas." },
+      { code:"SPD1", name:"Viršįtampių ribotuvas T2 (3+N)", m:4, group:"in", phase:"l2", note:"Apsaugo nuo viršįtampių (žaibo/impulsų)."},
+      { code:"QF-SPD", name:"SPD apsauginis automatas C20 3P (jei reikalinga)", m:3, group:"in", phase:"l3", note:"Atskiria SPD, jei reikia pagal gamintojo instrukciją / selektyvumą."},
+      { code:"UR1", name:"Įtampos kontrolės relė 3F+N", m:6, group:"in", phase:"n", note:"Atjungia apkrovas esant per didelei/mažai įtampai ar fazių disbalansui."},
+      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l1", note:"Laisva vieta ateičiai." },
     ]},
-    { row: 2, title: "Kritiniai + apšvietimas", items: [
-      { code:"QF1", name:"RCBO C10 1P+N (kritiniai)", m:2, group:"rcd", phase:"l1" },
-      { code:"RCD1", name:"RCD Apšvietimas 4P 30mA Type A", m:4, group:"rcd", phase:"l2" },
-      { code:"QF2", name:"Apšv. (K2/Laiptinė/Mieg.)", m:1, group:"1f", phase:"l1" },
-      { code:"QF3", name:"Apšv. K1 / 2A WC", m:1, group:"1f", phase:"l2" },
-      { code:"QF4", name:"Apšv. Svetainės", m:1, group:"1f", phase:"l3" },
-      { code:"QF5", name:"Apšv. Darbo k./Holas", m:1, group:"1f", phase:"l1" },
-      { code:"QF6", name:"Apšv. Holas pr. Garažo/WC", m:1, group:"1f", phase:"l2" },
-      { code:"QF7", name:"Apšv. Katilinė", m:1, group:"1f", phase:"l3" },
-      { code:"QF8", name:"Apšv. Garažo", m:1, group:"1f", phase:"l1" },
-      { code:"QF9", name:"Apšv. Žemė laukas", m:1, group:"1f", phase:"l2" },
+    { row: 2, title: "Matavimas + kritiniai + apšvietimas", items: [
+      { code:"SM1", name:"Smart meter 3F DIN", m:4, group:"in", phase:"pe", note:"Matavimas (CT ant L1/L2/L3). Duomenys inverteriui per LAN/RS485 (pagal modelį)." },
+      { code:"QF1", name:"RCBO C10 1P+N (kritiniai)", m:2, group:"rcd", phase:"l1", note:"Kritiniai vartotojai (pvz. internetas/signalizacija) su nuotėkio apsauga." },
+      { code:"RCD1", name:"RCD Apšvietimas 4P 30mA Type A", m:4, group:"rcd", phase:"l2", note:"Apsaugos grupė apšvietimui." },
+      { code:"QF2", name:"Apšv. (K2/Laiptinė/Mieg.)", m:1, group:"1f", phase:"l1", note:"3×1.5mm²" },
+      { code:"QF3", name:"Apšv. K1 / 2A WC", m:1, group:"1f", phase:"l2", note:"3×1.5mm²" },
+      { code:"QF4", name:"Apšv. Svetainės", m:1, group:"1f", phase:"l3", note:"3×1.5mm²" },
+      { code:"QF5", name:"Apšv. Darbo k./Holas", m:1, group:"1f", phase:"l1", note:"3×1.5mm²" },
+      { code:"QF6", name:"Apšv. Holas pr. Garažo/WC", m:1, group:"1f", phase:"l2", note:"3×1.5mm²" },
+      { code:"QF7", name:"Apšv. Katilinė", m:1, group:"1f", phase:"l3", note:"3×1.5mm²" },
+      { code:"QF8", name:"Apšv. Garažo", m:1, group:"1f", phase:"l1", note:"3×1.5mm²" },
+      { code:"QF9", name:"Apšv. Žemė laukas", m:1, group:"1f", phase:"l2", note:"3×1.5mm²" },
     ]},
     { row: 3, title: "Rozetės", items: [
-      { code:"RCD2", name:"RCD Rozetės 4P 30mA Type A", m:4, group:"rcd", phase:"l3" },
-      { code:"QF10", name:"Roz. Holas pr. garažo / Holas", m:1, group:"1f", phase:"l1" },
-      { code:"QF11", name:"Roz. Virtuvės / darbo kambario", m:1, group:"1f", phase:"l2" },
-      { code:"QF12", name:"Roz. Svetainės", m:1, group:"1f", phase:"l3" },
-      { code:"QF13", name:"Roz. Darbo k.", m:1, group:"1f", phase:"l1" },
-      { code:"QF14", name:"Roz. Kamb 1", m:1, group:"1f", phase:"l2" },
-      { code:"QF15", name:"Roz. Kamb 2", m:1, group:"1f", phase:"l3" },
-      { code:"QF16", name:"Roz. Miegamasis", m:1, group:"1f", phase:"l1" },
-      { code:"QF17", name:"Roz. 1 a WC", m:1, group:"1f", phase:"l2" },
-      { code:"QF18", name:"Roz. 2 a WC mažas", m:1, group:"1f", phase:"l3" },
-      { code:"QF19", name:"Roz. 2 a balkono + apšv.", m:1, group:"1f", phase:"l1" },
-      { code:"QF20", name:"Roz. Terasos + apšv.", m:1, group:"1f", phase:"l2" },
-      { code:"QF21", name:"Roz. Garažas (abi) – 1 automatas", m:1, group:"1f", phase:"l3" },
-      { code:"QF22", name:"Katilinė kriauklė + gyvatukas – 1 automatas", m:1, group:"1f", phase:"l1" },
-      { code:"QF23", name:"Roz. Filtrų", m:1, group:"1f", phase:"l2" },
-      { code:"REZ", name:"Rezervas", m:4, group:"res", phase:"l3" },
+      { code:"RCD2", name:"RCD Rozetės 4P 30mA Type A", m:4, group:"rcd", phase:"l3", note:"Apsaugos grupė rozetėms." },
+      { code:"QF10", name:"Roz. Holas pr. garažo / Holas", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF11", name:"Roz. Virtuvės / darbo kambario", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF12", name:"Roz. Svetainės", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF13", name:"Roz. Darbo k.", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF14", name:"Roz. Kamb 1", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF15", name:"Roz. Kamb 2", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF16", name:"Roz. Miegamasis", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF17", name:"Roz. 1 a WC", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF18", name:"Roz. 2 a WC mažas", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF19", name:"Roz. 2 a balkono + apšv.", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF20", name:"Roz. Terasos + apšv.", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF21", name:"Roz. Garažas (abi) – 1 automatas", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF22", name:"Katilinė kriauklė + gyvatukas – 1 automatas", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF23", name:"Roz. Filtrų", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l3", note:"Laisva vieta ateičiai." },
     ]},
     { row: 4, title: "Įrenginiai + įlajos + kolektoriai (RCD3)", items: [
-      { code:"RCD3", name:"RCD Įrenginiai 4P 30mA Type A", m:4, group:"rcd", phase:"l2" },
-      { code:"QF25", name:"Rekuperatorius", m:1, group:"1f", phase:"l1" },
-      { code:"QF26", name:"Orapūtė", m:1, group:"1f", phase:"l2" },
-      { code:"QF27", name:"Grežinys", m:1, group:"1f", phase:"l3" },
-      { code:"QF28", name:"Vartai", m:1, group:"1f", phase:"l1" },
-      { code:"QF29", name:"Internetas/kameros/ryšių spinta/LED", m:1, group:"1f", phase:"l2" },
-      { code:"QF31", name:"Signalizacija", m:1, group:"1f", phase:"l3" },
-      { code:"QF33", name:"Įlaja miegamasis (šildomas kabelis)", m:1, group:"1f", phase:"l1" },
-      { code:"QF34", name:"Įlaja kamb2 (šildomas kabelis)", m:1, group:"1f", phase:"l2" },
-      { code:"SH1", name:"Shelly DIN (įlajų valdymui)", m:1, group:"in", phase:"n" },
-      { code:"QF35", name:"Kolektorius 1 a.", m:1, group:"1f", phase:"l3" },
-      { code:"QF36", name:"Kolektorius 2 a.", m:1, group:"1f", phase:"l1" },
-      { code:"REZ", name:"Rezervas", m:4, group:"res", phase:"l2" },
+      { code:"RCD3", name:"RCD Įrenginiai 4P 30mA Type A", m:4, group:"rcd", phase:"l2", note:"Apsaugos grupė inžinerijai." },
+      { code:"QF25", name:"Rekuperatorius", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF26", name:"Orapūtė", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF27", name:"Grežinys", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF28", name:"Vartai", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF29", name:"Internetas/kameros/ryšių spinta/LED", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF31", name:"Signalizacija", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF33", name:"Įlaja miegamasis (šildomas kabelis)", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF34", name:"Įlaja kamb2 (šildomas kabelis)", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"SH1", name:"Shelly DIN (įlajų valdymui)", m:1, group:"in", phase:"n", note:"Valdo įlajas (išmanus valdymas)." },
+      { code:"QF35", name:"Kolektorius 1 a.", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF36", name:"Kolektorius 2 a.", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l2", note:"Laisva vieta ateičiai." },
     ]},
     { row: 5, title: "Buitis / virtuvė (RCD4)", items: [
-      { code:"RCD4", name:"RCD Buitis 4P 30mA Type A", m:4, group:"rcd", phase:"l3" },
-      { code:"QF40", name:"Skalbyklė", m:1, group:"1f", phase:"l1" },
-      { code:"QF41", name:"Džiovyklė", m:1, group:"1f", phase:"l2" },
-      { code:"QF42", name:"Roz. Sala", m:1, group:"1f", phase:"l3" },
-      { code:"QF43", name:"Orkaitė", m:1, group:"1f", phase:"l1" },
-      { code:"QF44", name:"Kaitlentė saloje 3P", m:3, group:"3f", phase:"l2" },
-      { code:"REZ", name:"Rezervas", m:7, group:"res", phase:"l3" },
+      { code:"RCD4", name:"RCD Buitis 4P 30mA Type A", m:4, group:"rcd", phase:"l3", note:"Apsaugos grupė buitinei/virtuvinei." },
+      { code:"QF40", name:"Skalbyklė", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF41", name:"Džiovyklė", m:1, group:"1f", phase:"l2", note:"3×2.5mm²" },
+      { code:"QF42", name:"Roz. Sala", m:1, group:"1f", phase:"l3", note:"3×2.5mm²" },
+      { code:"QF43", name:"Orkaitė", m:1, group:"1f", phase:"l1", note:"3×2.5mm²" },
+      { code:"QF44", name:"Kaitlentė saloje 3P", m:3, group:"3f", phase:"l2", note:"5×2.5mm²" },
+      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l3", note:"Laisva vieta ateičiai." },
     ]},
     { row: 6, title: "3 fazės + EV + Saulė", items: [
-      { code:"RCD-EV", name:"RCD Type B 4P 30mA (EV)", m:4, group:"ev", phase:"l1" },
-      { code:"QF45", name:"EV krovimo stotelė 3P", m:3, group:"ev", phase:"l2" },
-      { code:"QF46", name:"Š.S. vidinis blokas 3P", m:3, group:"3f", phase:"l3" },
-      { code:"QF47", name:"Š.S. išorinis blokas 3P", m:3, group:"3f", phase:"l1" },
-      { code:"QF48", name:"Kondicionierius 3P", m:3, group:"3f", phase:"l2" },
-      { code:"QF49", name:"Laukas / Pirtis / laistymo sistema 3P", m:3, group:"3f", phase:"l3" },
-      { code:"QF50", name:"Inverteris (saulė / hibridinis) 3P", m:3, group:"3f", phase:"l1" },
-      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l2" },
+      { code:"RCD-EV", name:"RCD Type B 4P 30mA (EV)", m:4, group:"ev", phase:"l1", note:"EV grandinei (reikalauja įkroviklio specifikacija)." },
+      { code:"QF45", name:"EV krovimo stotelė 3P", m:3, group:"ev", phase:"l2", note:"5×2.5mm²" },
+      { code:"QF46", name:"Š.S. vidinis blokas 3P", m:3, group:"3f", phase:"l3", note:"5×2.5mm²" },
+      { code:"QF47", name:"Š.S. išorinis blokas 3P", m:3, group:"3f", phase:"l1", note:"5×2.5mm²" },
+      { code:"QF48", name:"Kondicionierius 3P", m:3, group:"3f", phase:"l2", note:"5×2.5mm²" },
+      { code:"QF49", name:"Laukas / Pirtis / laistymo sistema 3P", m:3, group:"3f", phase:"l3", note:"5×2.5mm²" },
+      { code:"QF50", name:"Inverteris (saulė / hibridinis) 3P", m:3, group:"3f", phase:"l1", note:"5×2.5mm² (iki inverterio)" },
+      { code:"REZ", name:"Rezervas", m:-1, group:"res", phase:"l2", note:"Laisva vieta ateičiai." },
     ]},
   ],
   labelsTitle: "ETIKETĖS – 108M SKYDAS (kopijuok/spausdink)",
@@ -312,11 +390,56 @@ const DATA = {
     "QF-SPD – SPD apsauginis automatas C20 3P (jei reikia)",
     "UR1 – Įtampos kontrolės relė 3F+N (6M)",
     "SM1 – Smart meter 3F DIN (4M)",
+    "QF1 – Kritiniai RCBO C10 1P+N",
     "RCD1 – Apšvietimas",
     "RCD2 – Rozetės",
     "RCD3 – Įrenginiai / įlajos / kolektoriai",
     "RCD4 – Buitis",
-    "RCD-EV – EV (Type B)"
+    "RCD-EV – EV (Type B)",
+    "QF2 – Apšv. (K2/Laiptinė/Mieg.)",
+    "QF3 – Apšv. K1 / 2A WC",
+    "QF4 – Apšv. Svetainės",
+    "QF5 – Apšv. Darbo k./Holas",
+    "QF6 – Apšv. Holas pr. Garažo/WC",
+    "QF7 – Apšv. Katilinė",
+    "QF8 – Apšv. Garažo",
+    "QF9 – Apšv. Žemė laukas",
+    "QF10 – Roz. Holas pr. garažo / Holas",
+    "QF11 – Roz. Virtuvės / darbo kambario",
+    "QF12 – Roz. Svetainės",
+    "QF13 – Roz. Darbo k.",
+    "QF14 – Roz. Kamb 1",
+    "QF15 – Roz. Kamb 2",
+    "QF16 – Roz. Miegamasis",
+    "QF17 – Roz. 1 a WC",
+    "QF18 – Roz. 2 a WC mažas",
+    "QF19 – Roz. 2 a balkono + apšv.",
+    "QF20 – Roz. Terasos + apšv.",
+    "QF21 – Roz. Garažas (abi)",
+    "QF22 – Katilinė kriauklė + gyvatukas",
+    "QF23 – Roz. Filtrų",
+    "QF25 – Rekuperatorius",
+    "QF26 – Orapūtė",
+    "QF27 – Grežinys",
+    "QF28 – Vartai",
+    "QF29 – Internetas/kameros/ryšių spinta/LED",
+    "QF31 – Signalizacija",
+    "QF33 – Įlaja miegamasis",
+    "QF34 – Įlaja kamb2",
+    "SH1 – Shelly DIN (įlajoms)",
+    "QF35 – Kolektorius 1 a.",
+    "QF36 – Kolektorius 2 a.",
+    "QF40 – Skalbyklė",
+    "QF41 – Džiovyklė",
+    "QF42 – Roz. Sala",
+    "QF43 – Orkaitė",
+    "QF44 – Kaitlentė saloje 3P",
+    "QF45 – EV krovimo stotelė 3P",
+    "QF46 – Š.S. vidinis blokas 3P",
+    "QF47 – Š.S. išorinis blokas 3P",
+    "QF48 – Kondicionierius 3P",
+    "QF49 – Laukas/Pirtis/laistymo sistema 3P",
+    "QF50 – Inverteris (saulė/hibridinis) 3P",
   ],
   bom: [
     { item:"Skydas įleidžiamas 108M (6×18)", qty:"1 vnt" },
@@ -328,6 +451,9 @@ const DATA = {
     { item:"RCD Type A 4P 63A 30mA", qty:"4 vnt (RCD1–RCD4)" },
     { item:"RCBO C10 1P+N 30mA Type A", qty:"1 vnt (QF1)" },
     { item:"RCD Type B 4P 30mA (EV)", qty:"1 vnt (RCD-EV)" },
+    { item:"MCB 1P C10 (apšvietimas)", qty:"8 vnt (QF2–QF9)" },
+    { item:"MCB 1P C16 (rozetės/įrenginiai/buitis)", qty:"(pagal sąrašą) vnt" },
+    { item:"MCB 3P C16 (3 fazės)", qty:"6 vnt (QF44–QF50 be RCD-EV)" },
     { item:"Shelly DIN relė (įlajų valdymui)", qty:"1 vnt (SH1)" },
     { item:"N paskirstymo blokai (DIN), po 1 kiekvienai RCD grupei", qty:"5 vnt (RCD1,RCD2,RCD3,RCD4,RCD-EV)" },
     { item:"PE šyna (bendra)", qty:"1 vnt" }
@@ -356,15 +482,36 @@ const esc = s => (s ?? "").toString().replaceAll("&","&amp;").replaceAll("<","&l
 function groupClass(g){ return g==="in"?"g-in":g==="rcd"?"g-rcd":g==="1f"?"g-1f":g==="3f"?"g-3f":g==="ev"?"g-ev":"g-res"; }
 function phaseClass(p){ return p==="l1"?"phase-l1":p==="l2"?"phase-l2":p==="l3"?"phase-l3":p==="n"?"phase-n":"phase-pe"; }
 
-function normalizeRows(){
+function ensure18(){
   for(const r of DATA.rows){
     let sum=0;
     for(const it of r.items){ if(it.m>0) sum+=it.m; }
-    for(const it of r.items){ if(it.m===-1) it.m=Math.max(0, 18-sum); }
+    for(const it of r.items){
+      if(it.m===-1) it.m=Math.max(0, 18-sum);
+    }
   }
 }
+
+const sheetBack = document.getElementById("sheetBack");
+const sheetTitle = document.getElementById("sheetTitle");
+const sheetText = document.getElementById("sheetText");
+const sheetMeta = document.getElementById("sheetMeta");
+document.getElementById("sheetClose").addEventListener("click", ()=>sheetBack.style.display="none");
+sheetBack.addEventListener("click", (e)=>{ if(e.target===sheetBack) sheetBack.style.display="none"; });
+
+function showSheet(item){
+  sheetTitle.textContent = `${item.code} — ${item.name}`;
+  sheetText.textContent = item.note || "";
+  sheetMeta.innerHTML = `
+    <span class="meta">${item.m}M</span>
+    <span class="meta">${item.group==="in"?"Įvadas/apsauga":item.group==="rcd"?"RCD/RCBO":item.group==="1f"?"1F":item.group==="3f"?"3F":item.group==="ev"?"EV":"Rezervas"}</span>
+    <span class="meta">Fazė: ${item.phase.toUpperCase()}</span>
+  `;
+  sheetBack.style.display="flex";
+}
+
 function renderBoard(){
-  normalizeRows();
+  ensure18();
   const root=document.getElementById("board");
   root.innerHTML="";
   for(const r of DATA.rows){
@@ -374,31 +521,52 @@ function renderBoard(){
     rowEl.appendChild(lab);
 
     const slots=document.createElement("div"); slots.className="slots";
-    const cells=[];
-    for(const it of r.items){
-      for(let i=0;i<it.m;i++){
-        cells.push({tag:it.code, name:it.name, group:it.group, phase:it.phase});
-      }
-    }
-    while(cells.length<18) cells.push({tag:"REZ", name:"Rezervas", group:"res", phase:"l1"});
-    cells.length=18;
+    let used=0;
 
-    for(const c of cells){
-      const cell=document.createElement("div"); cell.className="cell";
-      cell.innerHTML=`<div class="barPhase ${phaseClass(c.phase)}"></div>
-                      <div class="barGroup ${groupClass(c.group)}"></div>
-                      <div class="tag">${esc(c.tag)}</div>
-                      <div class="name">${esc(c.name)}</div>`;
-      slots.appendChild(cell);
+    for(const it of r.items){
+      if(it.m<=0) continue;
+      used += it.m;
+
+      const block=document.createElement("div");
+      block.className="block";
+      block.style.gridColumn = `span ${it.m}`;
+      block.innerHTML = `
+        <div class="barPhase ${phaseClass(it.phase)}"></div>
+        <div class="barGroup ${groupClass(it.group)}"></div>
+        <div class="pill">${it.m}M</div>
+        <div class="tag">${esc(it.code)}</div>
+        <div class="name">${esc(it.name)}</div>
+      `;
+      block.addEventListener("click", ()=>showSheet(it));
+      slots.appendChild(block);
+    }
+
+    if(used < 18){
+      const filler=document.createElement("div");
+      filler.className="block";
+      filler.style.gridColumn = `span ${18-used}`;
+      filler.innerHTML = `
+        <div class="barPhase ${phaseClass("l1")}"></div>
+        <div class="barGroup ${groupClass("res")}"></div>
+        <div class="pill">${18-used}M</div>
+        <div class="tag">REZ</div>
+        <div class="name">Rezervas</div>
+      `;
+      filler.addEventListener("click", ()=>showSheet({code:"REZ", name:"Rezervas", m:(18-used), group:"res", phase:"l1", note:"Laisva vieta ateičiai."}));
+      slots.appendChild(filler);
     }
     rowEl.appendChild(slots);
     root.appendChild(rowEl);
   }
 }
+
 function renderRowsTables(targetId){
   const el=document.getElementById(targetId); el.innerHTML="";
   for(const r of DATA.rows){
-    const lines=r.items.map(it=>`• ${it.code} (${it.m>0?it.m:0}M) — ${it.name}`).join("<br>");
+    const lines=r.items
+      .filter(it=>it.m>0)
+      .map(it=>`• ${it.code} (${it.m}M) — ${it.name}`)
+      .join("<br>");
     const wrap=document.createElement("div");
     wrap.innerHTML = `<div class="tableWrap" style="margin-top:10px;">
         <table>
@@ -442,5 +610,5 @@ renderSingleLine("slD");
 
 out = Path("/mnt/data/index.html")
 out.write_text(html, encoding="utf-8")
-str(out)
+print("Wrote", out)
 
